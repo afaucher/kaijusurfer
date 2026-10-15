@@ -162,34 +162,32 @@ The opening-pace intervals above are measured in real time. They're the base int
 
 - The kaiju dies, explodes, and sheds its remaining arms. Then the summary screen appears.
 - **Summary:** blocks climbed (the score), energy harvested, soldiers eaten and arms lost.
-- **Later:** a best-score record, daily seeded mazes, and districts with their own palettes and bosses.
+- **Run structure:** endless, with no levels and no exit. A run lasts until the kaiju dies.
+- **Later:** a best-score record, daily seeded mazes, and districts with their own palettes and bosses. Districts are bands of the endless climb, not separate levels.
 
 ## 12. Presentation
 
 ### Visual style
 
-There are two styles to compare, and both are live in the prototype.
+**Neon arcade** is the game's style: Pac-Man-like neon outlines around the roads in a dark night city. Energy glows, enemies are warm colors, and the kaiju is purple. It keeps small pellets and red telegraphs readable on a phone, and it stays sharp at any pixel density.
 
-- **Neon arcade:** Pac-Man-like neon outlines around the roads on a dark night city. Energy glows, enemies are warm colors, and the kaiju is purple.
-- **Pixel city:** a low-res buffer drawn about 2 screen pixels per game pixel. Asphalt roads with lane markings, lit windows on the buildings between blocks, and sprites with hard outlines.
-
-**Recommendation:** build on **Neon** for readability, and borrow Pixel's street cues (lane markings, lit windows) to keep the city feel.
+The prototype still has a **Pixel city** toggle for reference: a low-res look with asphalt, lane markings and lit windows. It isn't a shipping style. Its street details (lane markings, lit windows in the wall strips) are candidates to bring into Neon so the maze reads more like a city.
 
 ### Color roles
 
-| Role | Neon | Pixel |
-|---|---|---|
-| Kaiju | Purple `#c45bff` | Purple `#8e3fd8` |
-| Energy | Yellow pellets, green cells, gold cores | Same family |
-| Enemies | Orange (tanks), pink-red (infantry) | Olive and khaki (military) |
-| Danger | Red `#ff1f45`, used only for telegraphs and the wave | Red `#ff3044` |
-| Maze | Cyan road edges | Grey asphalt and sidewalk |
+| Role | Color |
+|---|---|
+| Kaiju | Purple `#c45bff` on a dark violet body `#2b0a52` |
+| Energy | Yellow pellets `#ffe36a`, green cells `#4dffa6`, gold cores `#ffd23f` |
+| Enemies | Orange tanks `#ff8a3d`, pink-red infantry `#ff4d6d`, amber grenadiers `#ffb43d` |
+| Danger | Red `#ff1f45`, used only for telegraphs and the wave |
+| Maze | Cyan road edges `#27d3ff` on near-black `#07040f` |
 
 ### HUD
 
 - **Top left:** blocks climbed.
 - **Top center:** the arms (8 pips, with the pluckers shaped differently) and an HP bar.
-- **Top right:** the style toggle and pause.
+- **Top right:** pause. The prototype also has the Pixel reference toggle here.
 - **Bottom:** the Claw button (with its cooldown sweep), the Laser button (with a 3-segment energy ring and the charge count), and hints for the tap zones.
 
 ### Feedback
@@ -211,13 +209,13 @@ Not started. Each telegraph type should have its own warning sound (rising for a
 | 3 | What does the wave do on contact? | Damage over time, never instant death | **Decided** |
 | 4 | How do health and arms relate? | 100 HP, one arm per 12.5 HP lost, arms regrow when you heal | **Decided** |
 | 5 | How fast does a run start? | 50% pace and 50% enemy pressure, ramping to full over 3 minutes | **Decided** |
-| 6 | Can the claw break cores? | Recommended: no, cells only. Otherwise the laser becomes optional | Open |
-| 7 | Which visual style? | Recommended: Neon, plus Pixel's street details | Open |
-| 8 | Endless run or levels? | Recommended: endless, with districts later | Open |
+| 6 | Can the claw break cores? | No. The claw cracks cells only; cores need the laser or an explosion | **Decided** |
+| 7 | Which visual style? | Neon arcade | **Decided** |
+| 8 | Endless run or levels? | Endless | **Decided** |
 
 ## 14. Next steps
 
-1. Settle the remaining open decisions above.
+1. Decide whether to bring Pixel's street details (lane markings, lit windows) into Neon, then remove the Pixel toggle.
 2. Play-test on real phones: turn-timing tolerances, button placement, frame rate.
 3. Move to TypeScript and Vite, and split the code into modules (maze, movers, AI, weapons, render). Hold off on an engine unless real devices show we need one.
 4. Add audio and haptics (vibrate on hits and lost arms).
