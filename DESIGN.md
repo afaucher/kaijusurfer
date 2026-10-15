@@ -28,8 +28,9 @@ A run ends when the kaiju dies. Score is blocks climbed.
 
 | Input | Action |
 |---|---|
-| Tap the left or right half of the screen | Turn left or right at the next junction |
-| Swipe up or down | Climb, or back off |
+| **D-pad** (bottom left) | Steer up, down, left or right. This is the main steering control |
+| Tap the left or right half of the play area | Turn left or right (shortcut) |
+| Swipe in any direction | Steer that way (shortcut) |
 | **Claw** button | Short-range melee swipe in front |
 | **Laser** button | Fire the laser in the direction you're facing |
 | Desktop | Arrow keys or WASD to steer, Space for the laser, X for the claw, P to pause |
@@ -38,12 +39,18 @@ A run ends when the kaiju dies. Score is blocks climbed.
 
 - The kaiju keeps moving in its current direction until something changes it.
 - **Hitting a wall while moving sideways:** turn up if possible, otherwise down, otherwise reverse.
-- **Hitting a wall while moving up or down:** turn toward the side you last tapped, then the other side, then reverse.
-- **Early taps** are remembered for the next 2 junctions.
-- **Late taps** still count: within 0.3 of a block past a junction, the kaiju snaps back and takes the turn.
-- Tapping the opposite direction reverses immediately, even between junctions.
+- **Hitting a wall while moving up or down:** turn toward the side you last steered, then the other side, then reverse.
+- **Early inputs** are remembered for the next 2 junctions.
+- **Late inputs** still count: within 0.3 of a block past a junction, the kaiju snaps back and takes the turn.
+- Steering the opposite way reverses immediately, even between junctions.
 
-The Claw and Laser buttons sit at the bottom center, between the left and right tap zones. The tap zones cover the rest of the screen.
+### Layout
+
+- **Bottom left:** the D-pad, a cross of 48 px buttons for the left thumb.
+- **Bottom right:** Claw and Laser for the right thumb.
+- **Behind the controls:** a dark gradient keeps the controls readable over the wave.
+- **Feedback:** every steering input, from the D-pad, a tap, a swipe or a key, flashes the matching D-pad arrow. The arrow for the current heading stays softly lit.
+- **The rest of the screen** is the play area, where taps and swipes also steer.
 
 ## 4. The maze
 
@@ -192,7 +199,7 @@ Street details keep the maze reading as a city rather than an abstract maze:
 - **Top left:** blocks climbed.
 - **Top center:** the arms (8 pips, with the pluckers shaped differently) and an HP bar.
 - **Top right:** pause.
-- **Bottom:** the Claw button (with its cooldown sweep), the Laser button (with a 3-segment energy ring and the charge count), and hints for the tap zones.
+- **Bottom:** the D-pad (left), the Claw button with its cooldown sweep, and the Laser button with a 3-segment energy ring and the charge count (right).
 
 ### Feedback
 
@@ -209,7 +216,7 @@ Not started. Each telegraph type should have its own warning sound (rising for a
 | # | Question | Decision | Status |
 |---|---|---|---|
 | 1 | When can the laser fire? | Each shot costs ⅓ of the meter, with no fill requirement | **Decided** |
-| 2 | How do you climb on purpose? | Tap left or right, and swipe up or down. Walls push you upward | **Decided** |
+| 2 | How do you climb on purpose? | D-pad, with tap and swipe as shortcuts. Walls push you upward | **Decided** |
 | 3 | What does the wave do on contact? | Damage over time, never instant death | **Decided** |
 | 4 | How do health and arms relate? | 100 HP, one arm per 12.5 HP lost, arms regrow when you heal | **Decided** |
 | 5 | How fast does a run start? | 50% pace and 50% enemy pressure, ramping to full over 3 minutes | **Decided** |
@@ -219,7 +226,7 @@ Not started. Each telegraph type should have its own warning sound (rising for a
 
 ## 14. Next steps
 
-1. Play-test on real phones: turn-timing tolerances, button placement, frame rate.
+1. Play-test on real phones: turn-timing tolerances, D-pad and button size and placement, frame rate.
 2. Move to TypeScript and Vite, and split the code into modules (maze, movers, AI, weapons, render). Hold off on an engine unless real devices show we need one.
 3. Add audio and haptics (vibrate on hits and lost arms).
 4. Fixed block layouts (substation, residential, park) so routes are easier to read.

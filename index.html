@@ -58,11 +58,28 @@ html, body { height: 100%; margin: 0; background: #030108; color: var(--fg); fon
 /* Bottom controls */
 #controls {
   position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; pointer-events: none;
-  padding: 0 14px calc(var(--safe-bottom) + 16px); display: flex; align-items: flex-end; justify-content: space-between;
+  padding: 40px 14px calc(var(--safe-bottom) + 14px); display: flex; align-items: flex-end; justify-content: space-between;
+  background: linear-gradient(rgba(7,4,15,0), rgba(7,4,15,.72) 45%);
 }
-.taphint { font: 700 11px var(--f-ui); letter-spacing: .14em; color: rgba(239,232,255,.32); text-transform: uppercase; display: flex; align-items: center; gap: 6px; padding-bottom: 18px; transition: color .15s; }
-.taphint.on { color: var(--energy); }
-.taphint span { font-size: 18px; }
+/* D-pad: thumb-sized cross, left side */
+#dpad { display: grid; grid-template-columns: repeat(3, 48px); grid-template-rows: repeat(3, 48px); pointer-events: auto; }
+.pad {
+  display: grid; place-items: center; padding: 0; cursor: pointer; color: var(--maze);
+  background: rgba(14,8,30,.82); border: 1px solid rgba(39,211,255,.42); border-radius: 10px;
+  transition: background .12s, color .12s, box-shadow .12s;
+}
+.pad svg { width: 16px; height: 16px; fill: currentColor; }
+.pad[data-dir="U"] { grid-area: 1 / 2; border-radius: 10px 10px 4px 4px; }
+.pad[data-dir="L"] { grid-area: 2 / 1; border-radius: 10px 4px 4px 10px; }
+.pad[data-dir="R"] { grid-area: 2 / 3; border-radius: 4px 10px 10px 4px; }
+.pad[data-dir="D"] { grid-area: 3 / 2; border-radius: 4px 4px 10px 10px; }
+.pad[data-dir="L"] svg { transform: rotate(-90deg); }
+.pad[data-dir="R"] svg { transform: rotate(90deg); }
+.pad[data-dir="D"] svg { transform: rotate(180deg); }
+.pad.heading { box-shadow: 0 0 12px rgba(39,211,255,.45), inset 0 0 0 1px rgba(39,211,255,.7); }
+.pad.on { background: var(--maze); color: #07040f; box-shadow: 0 0 18px rgba(39,211,255,.8); }
+.pad:focus-visible { outline: 2px solid var(--energy); outline-offset: 2px; }
+.hub { grid-area: 2 / 2; align-self: center; justify-self: center; width: 14px; height: 14px; border-radius: 50%; border: 1px solid rgba(39,211,255,.35); }
 .btns { display: flex; align-items: flex-end; gap: 12px; pointer-events: auto; }
 .ctl {
   position: relative; border: 0; padding: 0; cursor: pointer; border-radius: 50%; color: var(--fg);
@@ -87,7 +104,7 @@ html, body { height: 100%; margin: 0; background: #030108; color: var(--fg); fon
 #laser.deny { animation: deny .3s; }
 @keyframes deny { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
 #waveChip {
-  position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(var(--safe-bottom) + 112px); z-index: 2;
+  position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(var(--safe-bottom) + 176px); z-index: 2;
   font: 700 11px var(--f-ui); letter-spacing: .16em; color: var(--danger); background: rgba(40,4,14,.75);
   border: 1px solid rgba(255,36,72,.6); border-radius: 20px; padding: 5px 10px; pointer-events: none;
 }
@@ -141,12 +158,17 @@ html, body { height: 100%; margin: 0; background: #030108; color: var(--fg); fon
     </div>
     <div id="waveChip" hidden>Wave <b>0.0</b> blk behind</div>
     <div id="controls">
-      <div class="taphint" id="tapL"><span>&#9664;</span>Tap</div>
+      <div id="dpad" role="group" aria-label="Direction pad">
+        <button class="pad" type="button" data-dir="U" aria-label="Up"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M5 1.5 9.2 8.5H.8z"/></svg></button>
+        <button class="pad" type="button" data-dir="L" aria-label="Left"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M5 1.5 9.2 8.5H.8z"/></svg></button>
+        <i class="hub"></i>
+        <button class="pad" type="button" data-dir="R" aria-label="Right"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M5 1.5 9.2 8.5H.8z"/></svg></button>
+        <button class="pad" type="button" data-dir="D" aria-label="Down"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M5 1.5 9.2 8.5H.8z"/></svg></button>
+      </div>
       <div class="btns">
         <button class="ctl" id="claw" type="button"><i class="cd"></i><span>Claw</span></button>
         <button class="ctl" id="laser" type="button"><span>Laser<b id="charges">0</b></span></button>
       </div>
-      <div class="taphint" id="tapR">Tap<span>&#9654;</span></div>
     </div>
     <div id="overlay"></div>
   </div>
@@ -1081,6 +1103,8 @@ function hud() {
     chargesEl.textContent = ch; laserEl.classList.toggle('ready', ch > 0);
     clawEl.style.setProperty('--cd', (K.clawCD / CLAW_CD).toFixed(2));
   }
+  const head = state === 'play' && !K.dead ? K.m.dir : '';
+  if (head !== hud.head) { hud.head = head; for (const d in pads) pads[d].classList.toggle('heading', d === head); }
   const gap = waveY - (camY + VIEW_H);
   const show = state === 'play' && gap > 0;
   waveChip.hidden = !show;
@@ -1128,9 +1152,9 @@ function showOverlay(kind) {
   overlay.hidden = false; miniCanvases.length = 0;
   const guide = `<div class="sect">Field guide</div><div class="guide">${GUIDE.map(g => `<div class="card ${g.cls}"><canvas data-mini="${g.id}" width="120" height="120"></canvas><h3>${g.name}</h3><p>${g.note}</p></div>`).join('')}</div>`;
   const howto = `<ul class="howto">
-      <li><b>Tap left / right</b><span>Turn at the next junction. Late taps still count.</span></li>
-      <li><b>Swipe up / down</b><span>Climb or back off. Walls bounce you up first.</span></li>
-      <li><b>Claw</b><span>Short swipe in front. Kills or eats what it hits and cracks cells.</span></li>
+      <li><b>D-pad</b><span>Steer. Turns happen at the next junction, late presses still count, and walls turn you upward.</span></li>
+      <li><b>Tap or swipe</b><span>Also steers: tap the left or right half, or swipe in any direction.</span></li>
+            <li><b>Claw</b><span>Short swipe in front. Kills or eats what it hits and cracks cells.</span></li>
       <li><b>Laser</b><span>Costs ⅓ energy. Blasts up to two walls and anything on the road.</span></li></ul>`;
   let html = '';
   if (kind === 'title') {
@@ -1162,7 +1186,15 @@ overlay.addEventListener('click', e => {
 //  Input
 // ============================================================
 let gesture = null;
-function tapHint(side) { const el = side === 'L' ? $('#tapL') : $('#tapR'); el.classList.add('on'); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('on'), 160); }
+const pads = {}; document.querySelectorAll('.pad').forEach(b => { pads[b.dataset.dir] = b; });
+function input(d) {   // every steering source (pad, tap, swipe, keys) goes through here and lights the matching arrow
+  steer(d); const el = pads[d]; el.classList.add('on'); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('on'), 140);
+}
+Object.values(pads).forEach(b => {
+  b.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); input(b.dataset.dir); });
+  b.addEventListener('click', e => { if (e.detail === 0) input(b.dataset.dir); });
+  b.addEventListener('contextmenu', e => e.preventDefault());
+});
 stage.addEventListener('pointerdown', e => {
   if (e.target.closest('button, #overlay')) return;
   e.preventDefault(); gesture = { id: e.pointerId, x: e.clientX, y: e.clientY, done: false };
@@ -1170,12 +1202,12 @@ stage.addEventListener('pointerdown', e => {
 stage.addEventListener('pointermove', e => {
   if (!gesture || gesture.done || e.pointerId !== gesture.id) return;
   const dx = e.clientX - gesture.x, dy = e.clientY - gesture.y;
-  if (Math.abs(dy) > 26 && Math.abs(dy) > Math.abs(dx) * 1.2) { steer(dy < 0 ? 'U' : 'D'); gesture.done = true; }
-  else if (Math.abs(dx) > 34) { const s = dx < 0 ? 'L' : 'R'; steer(s); tapHint(s); gesture.done = true; }
+  if (Math.abs(dy) > 26 && Math.abs(dy) > Math.abs(dx) * 1.2) { input(dy < 0 ? 'U' : 'D'); gesture.done = true; }
+  else if (Math.abs(dx) > 34) { input(dx < 0 ? 'L' : 'R'); gesture.done = true; }
 });
 const endGesture = e => {
   if (!gesture || e.pointerId !== gesture.id) return;
-  if (!gesture.done && e.type === 'pointerup') { const r = stage.getBoundingClientRect(), s = (gesture.x - r.left) < r.width / 2 ? 'L' : 'R'; steer(s); tapHint(s); }
+  if (!gesture.done && e.type === 'pointerup') { const r = stage.getBoundingClientRect(); input((gesture.x - r.left) < r.width / 2 ? 'L' : 'R'); }
   gesture = null;
 };
 stage.addEventListener('pointerup', endGesture); stage.addEventListener('pointercancel', endGesture);
@@ -1186,7 +1218,7 @@ $('#claw').addEventListener('click', e => { if (e.detail === 0) claw(); });
 $('#pauseBtn').addEventListener('click', () => { if (state === 'play') { state = 'pause'; showOverlay('pause'); } else if (state === 'pause') { state = 'play'; overlay.hidden = true; } });
 const KEYS = { ArrowLeft: 'L', a: 'L', ArrowRight: 'R', d: 'R', ArrowUp: 'U', w: 'U', ArrowDown: 'D', s: 'D' };
 addEventListener('keydown', e => {
-  if (KEYS[e.key]) { e.preventDefault(); steer(KEYS[e.key]); }
+  if (KEYS[e.key]) { e.preventDefault(); input(KEYS[e.key]); }
   else if (e.key === ' ') { e.preventDefault(); fireLaser(); }
   else if (e.key === 'x' || e.key === 'Shift') { claw(); }
   else if ((e.key === 'Escape' || e.key === 'p') && (state === 'play' || state === 'pause')) $('#pauseBtn').click();
