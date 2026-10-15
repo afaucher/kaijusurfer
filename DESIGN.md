@@ -1,6 +1,6 @@
 # Kaiju Surfer: game design
 
-**Status:** draft based on the playable prototype (`index.html`). Rules marked **(proposed)** are waiting on a decision; see [Open decisions](#13-open-decisions). Every number comes from the prototype and can be tuned. They're collected in the [tuning appendix](#appendix-tuning-values).
+**Status:** draft based on the playable prototype (`index.html`). Decided rules are logged in [Decisions](#13-decisions). Every number comes from the prototype and can be tuned. They're collected in the [tuning appendix](#appendix-tuning-values).
 
 ## 1. Pitch
 
@@ -38,7 +38,7 @@ A run ends when the kaiju dies. Score is blocks climbed.
 
 - The kaiju keeps moving in its current direction until something changes it.
 - **Hitting a wall while moving sideways:** turn up if possible, otherwise down, otherwise reverse.
-- **Hitting a wall while moving up or down (proposed):** turn toward the side you last tapped, then the other side, then reverse.
+- **Hitting a wall while moving up or down:** turn toward the side you last tapped, then the other side, then reverse.
 - **Early taps** are remembered for the next 2 junctions.
 - **Late taps** still count: within 0.3 of a block past a junction, the kaiju snaps back and takes the turn.
 - Tapping the opposite direction reverses immediately, even between junctions.
@@ -74,11 +74,11 @@ Each block is a 3x3 grid of lots surrounded by sidewalks. Buildings and energy s
 
 ## 6. The kaiju
 
-- It moves at **2.6 blocks/s** at full strength. It's roughly one block wide, so its legs straddle the buildings along the road.
+- It moves at **2.6 blocks/s** at full pace (1.3 blocks/s at the start of a run; see [Difficulty and pacing](#10-difficulty-and-pacing)). It's roughly one block wide, so its legs straddle the buildings along the road.
 - It has **8 arms**:
   - **6 walkers**, which step in alternating tripod groups.
   - **2 pluckers** at the head, which reach about 0.6 block to snatch pellets and carry them to the mouth.
-- **Health (proposed):**
+- **Health:**
   - The kaiju has 100 HP and loses one arm for every 12.5 HP lost. The severed arm flops away on the road.
   - Losing walkers slows you, down to 50% speed with no walkers left.
   - Losing pluckers cuts your harvest rate. With none left, you can only get energy from orbs.
@@ -97,7 +97,7 @@ Each block is a 3x3 grid of lots surrounded by sidewalks. Buildings and energy s
 
 ### Laser
 
-- **Energy:** the meter holds 90 energy as 3 charges of 30. Each shot costs one charge, about ⅓ of the meter. **(Proposed:** you can fire whenever at least one charge is full.)
+- **Energy:** each shot costs ⅓ of the meter (30 of 90). There's no fill requirement: you can fire whenever you have at least ⅓.
 - **Beam:** reaches 5 blocks in the direction you're facing and blasts open **up to 2 walls**.
 - **Blasted walls:** each one breaks the cells and cores right beside it, so a well-aimed shot pays back some of its cost.
 - **Enemies:** the beam kills every enemy on its line.
@@ -125,26 +125,38 @@ Every blast kills the soldiers it hits and breaks the energy nodes and buildings
 ## 9. The wave
 
 - A dense band of tanks and infantry, with searchlights sweeping across it, fills the bottom of the screen and advances up the maze.
-- **Speed:** 0.55 blocks/s at the start, rising to 1.5 blocks/s. If it falls more than 6 blocks behind, it speeds up to close the gap.
-- **Contact (proposed):** about 26 HP per second while you're inside it.
+- **Speed:** 0.28 blocks/s at the start of a run, rising to 1.5 blocks/s at full pace. If it falls more than 6 blocks behind, it speeds up to close the gap.
+- **Contact:** damage over time, never instant death. About 13 HP/s at the start of a run, rising to 26 HP/s at full pace.
 - **Within 4.5 blocks:** it fires tracer rounds at you, 1.5 damage each.
 - **Off-screen:** a "Wave N blk behind" chip appears so you always know how close it is.
 - It feeds the maze, sending tanks, marines and grenadiers up the roads ahead of it.
 
-## 10. Difficulty and spawning
+## 10. Difficulty and pacing
 
-Difficulty ramps from 0 to 1 over the first **150 blocks** climbed.
+Difficulty is driven by **time, not distance**, and ramps from opening pace to full pace over the first **3 minutes** of a run.
 
-| Item | Start | Full difficulty |
+- **Pace:** the game starts at **50% speed**, and pace rises steadily to 100% at 3:00. Pace scales:
+  - all movement: the kaiju, the enemies, the wave and projectiles;
+  - enemy cooldowns and attack warnings;
+  - the spawn and strike clocks.
+
+  So at the opening pace there's half as much happening, and you get twice as long to read each warning.
+- **Not scaled by pace:** the 1-second limit for absorbing energy, the claw's cooldown (so it always feels responsive), and visual effects.
+- **Enemy pressure** ramps on top of pace, from these opening values to their full values:
+
+| Item | At 0:00 (opening pace) | At 3:00 and after (full pace) |
 |---|---|---|
-| Wave speed | 0.55 blocks/s | 1.5 blocks/s |
-| Spawns from the wave (50% tank, 40% marines, 10% grenadier) | every 3.4 s | every 1.5 s |
-| Spawns ahead, at the top of the screen (mostly marines) | every 4.5 s | every 2.2 s |
-| Artillery (starts after 6 blocks) | every 8 s | every 4.5 s |
-| Airstrikes (start after 14 blocks) | every 14 s | every 8 s |
-| Enemy speed | ×1.0 | ×1.35 |
+| Pace (game speed) | 50% | 100% |
+| Kaiju speed | 1.3 blocks/s | 2.6 blocks/s |
+| Wave speed | 0.28 blocks/s | 1.5 blocks/s |
+| Spawns from the wave (50% tank, 40% marines, 10% grenadier) | every 6.8 s | every 1.5 s |
+| Spawns ahead, at the top of the screen (mostly marines) | every 9 s | every 2.2 s |
+| Artillery (first strike after 0:25) | every 16 s | every 4.5 s |
+| Airstrikes (first strike after 0:55) | every 28 s | every 8 s |
+| Enemy speed | ×0.5 | ×1.35 |
+| Most enemies on the map at once | 7 | 13 |
 
-No more than 13 enemies are on the map at once.
+The opening-pace intervals above are measured in real time. They're the base intervals divided by the 50% pace.
 
 ## 11. Run end and scoring
 
@@ -190,23 +202,22 @@ There are two styles to compare, and both are live in the prototype.
 
 Not started. Each telegraph type should have its own warning sound (rising for artillery, jet whine for airstrikes) so you can react without looking.
 
-## 13. Open decisions
+## 13. Decisions
 
-The prototype uses the recommended option for each.
-
-| # | Decision | Recommended | Alternative |
+| # | Question | Decision | Status |
 |---|---|---|---|
-| 1 | When can the laser fire? | With at least one charge full (⅓ of the meter) | Only when the meter is full, then up to 3 shots |
-| 2 | How do you climb on purpose? | Tap left or right, and swipe up or down. Walls push you upward | Always auto-turn up at the first open junction (removes route choice) |
-| 3 | What does the wave do on contact? | Heavy damage over time | Instant death |
-| 4 | Can the claw break cores? | No: cells only | Yes, but then the laser becomes optional |
-| 5 | How do health and arms relate? | 100 HP, one arm per 12.5 HP, arms regrow | One arm per hit, 8 hits total |
-| 6 | Which visual style? | Neon, plus Pixel's street details | Pixel city |
-| 7 | Endless run or levels? | Endless, with districts later | Short levels with an exit at the top |
+| 1 | When can the laser fire? | Each shot costs ⅓ of the meter, with no fill requirement | **Decided** |
+| 2 | How do you climb on purpose? | Tap left or right, and swipe up or down. Walls push you upward | **Decided** |
+| 3 | What does the wave do on contact? | Damage over time, never instant death | **Decided** |
+| 4 | How do health and arms relate? | 100 HP, one arm per 12.5 HP lost, arms regrow when you heal | **Decided** |
+| 5 | How fast does a run start? | 50% pace and 50% enemy pressure, ramping to full over 3 minutes | **Decided** |
+| 6 | Can the claw break cores? | Recommended: no, cells only. Otherwise the laser becomes optional | Open |
+| 7 | Which visual style? | Recommended: Neon, plus Pixel's street details | Open |
+| 8 | Endless run or levels? | Recommended: endless, with districts later | Open |
 
 ## 14. Next steps
 
-1. Settle the open decisions above.
+1. Settle the remaining open decisions above.
 2. Play-test on real phones: turn-timing tolerances, button placement, frame rate.
 3. Move to TypeScript and Vite, and split the code into modules (maze, movers, AI, weapons, render). Hold off on an engine unless real devices show we need one.
 4. Add audio and haptics (vibrate on hits and lost arms).
@@ -218,7 +229,8 @@ The prototype uses the recommended option for each.
 | Value | Setting |
 |---|---|
 | Road half-width | 0.17 block |
-| Kaiju speed | 2.6 blocks/s × (0.5 + 0.5 × walkers left ÷ 6) |
+| Pace | 0.5 → 1.0 over 180 s, applied to all game timing except the orb rule, the claw cooldown and visual effects |
+| Kaiju speed | 2.6 blocks/s × pace × (0.5 + 0.5 × walkers left ÷ 6) |
 | Pluck reach | 0.6 block |
 | Pluck time | 0.075 s reach + 0.09 s carry |
 | Energy | Pellet 0.6, cell 5, core 12. Meter maximum 90, one charge = 30 |
@@ -230,7 +242,7 @@ The prototype uses the recommended option for each.
 | Invulnerability after a hit | 0.3 s |
 | Maze generation | 52% of sideways segments open. 28% chance of an extra road up. First 3 rows fully open |
 | Block contents | Buildings 45%. Cells 60% full. Center lot is a core 72% of the time, and 70% of cores are full. 12% of pellet spots are left empty |
-| Enemy speeds | Tank 1.25, marines 1.7, grenadier 1.25 blocks/s |
+| Enemy speeds | Tank 1.25, marines 1.7, grenadier 1.25 blocks/s, × pace × (1 + 0.35 × ramp) |
 | Tank | 5-block range, 0.5 s aim, shell at 6 blocks/s, 2.6 s reload |
 | Marines | 2.4-block range, 3-round burst, 1.1 s reload |
 | Grenadier | Throws from 0.9 to 3.2 blocks away and backs off inside 1.6. 0.95 s flight, 3.2 s reload |

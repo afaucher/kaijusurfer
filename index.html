@@ -190,6 +190,7 @@ const OPP = { U: 'D', D: 'U', L: 'R', R: 'L' };
 const ANG = { U: -Math.PI / 2, D: Math.PI / 2, L: Math.PI, R: 0 };
 const KSPEED = 2.6, CHARGE = 30, EMAX = 90;
 const PELLET_E = 0.6, CELL_E = 5, CORE_E = 12;
+const RAMP_TIME = 180;      // seconds from opening pace to full pace
 const LATE_TOL = 0.3;        // how far past a junction a turn still snaps back
 const CLAW_CD = 0.55, CLAW_R = 0.85;
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -420,7 +421,7 @@ class Mover {
 // ============================================================
 //  Game state
 // ============================================================
-let state = 'title', now = 0;
+let state = 'title', now = 0, runTime = 0, ramp = 0;
 let camY = 0, VIEW_H = 10, shakeAmt = 0, shakeX = 0, shakeY = 0;
 let waveY = 99, waveFire = 0;
 let enemies = [], shots = [], grenades = [], teles = [], orbs = [], parts = [], rings = [], floaters = [], debris = [], timers = [];
@@ -449,7 +450,7 @@ function reset() {
   K.arms = makeArms(); restFeet(K.arms, K.rx, K.ry, K.ang); K.maxRow = 1; K.startRow = 1; K.clawCD = 0;
   Object.assign(stats, { eaten: 0, harvested: 0, armsLost: 0, kills: 0 });
   waveY = K.ry + 3.2; camY = K.ry - VIEW_H * 0.62;
-  spawnT = 3; aheadT = 2.5; artyT = 9; airT = 16; demoT = 1;
+  spawnT = 3; aheadT = 2.5; artyT = 9; airT = 16; demoT = 1; runTime = 0; ramp = 0;
   buildArmPips();
 }
 
@@ -491,7 +492,7 @@ function updateKaiju(dt) {
   const k = 1 - Math.exp(-dt * 22);
   K.rx += (K.m.x - K.rx) * k; K.ry += (K.m.y - K.ry) * k;
   let da = ANG[K.m.dir] - K.ang; da = Math.atan2(Math.sin(da), Math.cos(da)); K.ang += da * Math.min(1, dt * 12);
-  K.flash = Math.max(0, K.flash - dt); K.inv = Math.max(0, K.inv - dt); K.absorb = Math.max(0, K.absorb - dt * 2); K.clawCD = Math.max(0, K.clawCD - dt);
+  K.flash = Math.max(0, K.flash - dt); K.inv = Math.max(0, K.inv - dt); K.absorb = Math.max(0, K.absorb - dt * 2);
   K.maxRow = Math.max(K.maxRow, Math.floor(-K.ry + 0.001));
   updateArms(dt);
 }
@@ -655,7 +656,7 @@ function breakNear(x, y, rad, smashBuildings) {
 // ============================================================
 const ESPEED = { tank: 1.25, marines: 1.7, grenadier: 1.25 };
 function spawnEnemy(type, c, r, dir) {
-  if (enemies.length >= 13 || !rows.has(r)) return;
+  if (enemies.length >= Math.round(lerp(7, 13, ramp)) || !rows.has(r)) return;
   if (!'UDLR'.split('').some(d => open(c, r, d))) return;
   const m = new Mover(c, r, dir);
   const e = { type, m, cd: rand(0.8, 1.8), aim: 0, aimDir: 'U', n: type === 'marines' ? 5 : 1, seed: Math.random(), flee: false, dead: false };
@@ -829,22 +830,26 @@ function later(t, fn) { timers.push({ at: now + t, fn }); }
 // ============================================================
 function update(dt) {
   now += dt;
-  const diff = Math.min(1, (K.maxRow - K.startRow) / 150);
+  // Opening pace is 50%: movement, spawns and strikes all run on a scaled clock that reaches full speed after RAMP_TIME.
+  if (state === 'play') runTime += dt;
+  ramp = Math.min(1, runTime / RAMP_TIME);
+  const diff = ramp, pace = lerp(0.5, 1, ramp), sdt = dt * pace;
   for (const t of timers.filter(t => t.at <= now)) t.fn();
   timers = timers.filter(t => t.at > now);
 
   if (state === 'title') {
     demoT -= dt; if (demoT <= 0) { demoT = rand(0.8, 1.6); steer(pick(['L', 'R', 'U', 'U'])); }
   }
-  if (state === 'play' || state === 'title') updateKaiju(dt);
+  if (state === 'play' || state === 'title') updateKaiju(state === 'play' ? sdt : dt);
+  K.clawCD = Math.max(0, K.clawCD - dt);   // player cooldown stays on real time so the claw feels snappy
   if (state === 'play') {
     bfsT -= dt; if (bfsT <= 0) { bfsT = 0.2; bfs(); }
-    updateWave(dt, diff);
-    spawnT -= dt; if (spawnT <= 0) { spawnT = lerp(3.4, 1.5, diff); const r = Math.ceil(-waveY + 0.3); spawnEnemy(Math.random() < 0.5 ? 'tank' : Math.random() < 0.8 ? 'marines' : 'grenadier', Math.floor(Math.random() * COLS), r, 'U'); }
-    aheadT -= dt; if (aheadT <= 0) { aheadT = lerp(4.5, 2.2, diff); const r = Math.ceil(-camY) + 1; spawnEnemy(pick(['marines', 'marines', 'grenadier', 'tank']), Math.floor(Math.random() * COLS), r, 'D'); }
-    if (K.maxRow > 6) { artyT -= dt; if (artyT <= 0) { artyT = lerp(8, 4.5, diff); scheduleArtillery(); } }
-    if (K.maxRow > 14) { airT -= dt; if (airT <= 0) { airT = lerp(14, 8, diff); scheduleAirstrike(); } }
-    updateEnemies(dt, diff); updateShots(dt); updateTeles(dt); updateOrbs(dt);
+    updateWave(sdt, diff);
+    spawnT -= sdt; if (spawnT <= 0) { spawnT = lerp(3.4, 1.5, diff); const r = Math.ceil(-waveY + 0.3); spawnEnemy(Math.random() < 0.5 ? 'tank' : Math.random() < 0.8 ? 'marines' : 'grenadier', Math.floor(Math.random() * COLS), r, 'U'); }
+    aheadT -= sdt; if (aheadT <= 0) { aheadT = lerp(4.5, 2.2, diff); const r = Math.ceil(-camY) + 1; spawnEnemy(pick(['marines', 'marines', 'grenadier', 'tank']), Math.floor(Math.random() * COLS), r, 'D'); }
+    if (runTime > 25) { artyT -= sdt; if (artyT <= 0) { artyT = lerp(8, 4.5, diff); scheduleArtillery(); } }
+    if (runTime > 55) { airT -= sdt; if (airT <= 0) { airT = lerp(14, 8, diff); scheduleAirstrike(); } }
+    updateEnemies(sdt, diff); updateShots(sdt); updateTeles(sdt); updateOrbs(dt);   // orbs stay on real time: the 1 s rule is fixed
   }
   if (state !== 'pause') {
     for (const p of parts) { p.life -= dt; if (p.drag) { const f = Math.exp(-p.drag * dt); p.vx *= f; p.vy *= f; } p.x += p.vx * dt; p.y += p.vy * dt; }
@@ -1329,7 +1334,7 @@ function frame(t) {
   requestAnimationFrame(frame);
 }
 resize(); setStyle(mode); reset(); showOverlay('title');
-window.__kaiju = { K, get state() { return state; }, steer, fireLaser, claw, setStyle, start() { reset(); state = 'play'; overlay.hidden = true; }, step(n, dt) { for (let i = 0; i < n; i++) update(dt || 1 / 60); render(); hud(); }, get enemies() { return enemies; }, scheduleAirstrike, scheduleArtillery };
+window.__kaiju = { K, get state() { return state; }, steer, fireLaser, claw, setStyle, start() { reset(); state = 'play'; overlay.hidden = true; }, step(n, dt) { for (let i = 0; i < n; i++) update(dt || 1 / 60); render(); hud(); }, get enemies() { return enemies; }, get pace() { return lerp(0.5, 1, ramp); }, get runTime() { return runTime; }, scheduleAirstrike, scheduleArtillery };
 requestAnimationFrame(frame);
 })();
 </script>
