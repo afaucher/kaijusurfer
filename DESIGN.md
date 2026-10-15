@@ -171,7 +171,11 @@ The opening-pace intervals above are measured in real time. They're the base int
 
 **Neon arcade** is the game's style: Pac-Man-like neon outlines around the roads in a dark night city. Energy glows, enemies are warm colors, and the kaiju is purple. It keeps small pellets and red telegraphs readable on a phone, and it stays sharp at any pixel density.
 
-The prototype still has a **Pixel city** toggle for reference: a low-res look with asphalt, lane markings and lit windows. It isn't a shipping style. Its street details (lane markings, lit windows in the wall strips) are candidates to bring into Neon so the maze reads more like a city.
+Street details keep the maze reading as a city rather than an abstract maze:
+
+- **Roads:** a cyan neon curb, a dim sidewalk band inside it, then asphalt. Dashed lane markings run down the middle of each segment. Blasted segments show rubble instead of lane markings.
+- **Between the roads:** rooftops on a grid of 9 per block, with gaps for alleys. Some rooftops have lit windows, mostly warm, with occasional cyan and pink. These fill the strips where walls close a road and the edges of the map.
+- **Inside blocks:** a dark plaza holding the lots. Some low-rise buildings show a lit window or two, tall buildings and towers have a blinking red roof light, and faint power lines link the cells to the center.
 
 ### Color roles
 
@@ -187,7 +191,7 @@ The prototype still has a **Pixel city** toggle for reference: a low-res look wi
 
 - **Top left:** blocks climbed.
 - **Top center:** the arms (8 pips, with the pluckers shaped differently) and an HP bar.
-- **Top right:** pause. The prototype also has the Pixel reference toggle here.
+- **Top right:** pause.
 - **Bottom:** the Claw button (with its cooldown sweep), the Laser button (with a 3-segment energy ring and the charge count), and hints for the tap zones.
 
 ### Feedback
@@ -215,12 +219,11 @@ Not started. Each telegraph type should have its own warning sound (rising for a
 
 ## 14. Next steps
 
-1. Decide whether to bring Pixel's street details (lane markings, lit windows) into Neon, then remove the Pixel toggle.
-2. Play-test on real phones: turn-timing tolerances, button placement, frame rate.
-3. Move to TypeScript and Vite, and split the code into modules (maze, movers, AI, weapons, render). Hold off on an engine unless real devices show we need one.
-4. Add audio and haptics (vibrate on hits and lost arms).
-5. Fixed block layouts (substation, residential, park) so routes are easier to read.
-6. A best-score record, then districts and bosses.
+1. Play-test on real phones: turn-timing tolerances, button placement, frame rate.
+2. Move to TypeScript and Vite, and split the code into modules (maze, movers, AI, weapons, render). Hold off on an engine unless real devices show we need one.
+3. Add audio and haptics (vibrate on hits and lost arms).
+4. Fixed block layouts (substation, residential, park) so routes are easier to read.
+5. A best-score record, then districts and bosses.
 
 ## Appendix: tuning values
 
